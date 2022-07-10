@@ -1,10 +1,12 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
+import routes from './routes'
+import { bustCache } from "./bust-cache.js"
 
 Vue.use(VueRouter)
 
-const routes = [
+const aRoutes = [
   {
     path: '/',
     name: 'Home',
@@ -23,7 +25,16 @@ const routes = [
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
-  routes
+  routes: [...aRoutes, ...routes]
 })
+
+export function beforeEach(to, from, next) {
+  if (to.matched.some(record => record.meta.shouldBustCache)) {
+    bustCache()
+  }
+  next()
+}
+
+router.beforeEach((to, from, next) => beforeEach(to, from, next));
 
 export default router
